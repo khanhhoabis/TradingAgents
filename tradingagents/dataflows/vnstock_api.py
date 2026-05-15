@@ -1,12 +1,39 @@
 from typing import Annotated
 from datetime import datetime, timedelta
 import pandas as pd
+import time
+import logging
+from functools import wraps
+
+logger = logging.getLogger(__name__)
 
 try:
     from vnstock import Vnstock
 except ImportError:
     Vnstock = None
 
+def vnstock_retry(max_retries=3, base_delay=2.0):
+    """Decorator to retry vnstock API calls on failure with exponential backoff."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if attempt < max_retries:
+                        delay = base_delay * (2 ** attempt)
+                        logger.warning(f"vnstock API call failed ({e}), retrying in {delay:.0f}s (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(delay)
+                    else:
+                        logger.error(f"vnstock API call completely failed after {max_retries} retries: {e}")
+                        # Depending on the function signature we want to return a string or raise. 
+                        # Since all vnstock_api functions return strings for the LLM, we return the error string.
+                        return f"Error: Failed to fetch data after {max_retries} retries due to {e}"
+        return wrapper
+    return decorator
+
+@vnstock_retry()
 def get_vnstock_data_online(
     symbol: Annotated[str, "ticker symbol of the company"],
     start_date: Annotated[str, "Start date in yyyy-mm-dd format"],
@@ -16,42 +43,39 @@ def get_vnstock_data_online(
     if Vnstock is None:
         return "Error: vnstock library is not installed."
         
-    try:
-        datetime.strptime(start_date, "%Y-%m-%d")
-        datetime.strptime(end_date, "%Y-%m-%d")
+    datetime.strptime(start_date, "%Y-%m-%d")
+    datetime.strptime(end_date, "%Y-%m-%d")
+    
+    client = Vnstock()
+    stock = client.stock(symbol=symbol.upper(), source='VCI')
+    
+    data = stock.quote.history(start=start_date, end=end_date)
+    
+    if data is None or data.empty:
+        return f"No data found for symbol '{symbol}' between {start_date} and {end_date}"
         
-        client = Vnstock()
-        stock = client.stock(symbol=symbol.upper(), source='VCI')
+    # Clean dataframe
+    data = data.reset_index(drop=True)
+    if 'time' in data.columns:
+        data.set_index('time', inplace=True)
         
-        data = stock.quote.history(start=start_date, end=end_date)
-        
-        if data is None or data.empty:
-            return f"No data found for symbol '{symbol}' between {start_date} and {end_date}"
+    # Round numerical values to 2 decimal places for cleaner display
+    numeric_columns = ["open", "high", "low", "close", "volume"]
+    for col in numeric_columns:
+        if col in data.columns:
+            data[col] = data[col].round(2)
             
-        # Clean dataframe
-        data = data.reset_index(drop=True)
-        if 'time' in data.columns:
-            data.set_index('time', inplace=True)
-            
-        # Round numerical values to 2 decimal places for cleaner display
-        numeric_columns = ["open", "high", "low", "close", "volume"]
-        for col in numeric_columns:
-            if col in data.columns:
-                data[col] = data[col].round(2)
-                
-        # Convert DataFrame to CSV string
-        csv_string = data.to_csv()
-        
-        # Add header information
-        header = f"# Stock data for {symbol.upper()} from {start_date} to {end_date}\n"
-        header += f"# Total records: {len(data)}\n"
-        header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        
-        return header + csv_string
-        
-    except Exception as e:
-        return f"Error retrieving data for {symbol}: {str(e)}"
+    # Convert DataFrame to CSV string
+    csv_string = data.to_csv()
+    
+    # Add header information
+    header = f"# Stock data for {symbol.upper()} from {start_date} to {end_date}\n"
+    header += f"# Total records: {len(data)}\n"
+    header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+    
+    return header + csv_string
 
+@vnstock_retry()
 def get_vnstock_fundamentals(
     ticker: Annotated[str, "ticker symbol of the company"],
     curr_date: Annotated[str, "current date (not used for vnstock)"] = None
@@ -60,30 +84,26 @@ def get_vnstock_fundamentals(
     if Vnstock is None:
         return "Error: vnstock library is not installed."
         
-    try:
-        client = Vnstock()
-        stock = client.stock(symbol=ticker.upper(), source='TCBS')
+    client = Vnstock()
+    stock = client.stock(symbol=ticker.upper(), source='TCBS')
+    
+    data = stock.company.profile()
+    
+    if data is None or data.empty:
+        return f"No fundamentals data found for symbol '{ticker}'"
         
-        data = stock.company.profile()
-        
-        if data is None or data.empty:
-            return f"No fundamentals data found for symbol '{ticker}'"
+    # Convert dataframe to a readable list of properties
+    profile_dict = data.to_dict(orient='records')[0] if len(data) > 0 else {}
+    
+    lines = []
+    for label, value in profile_dict.items():
+        if value is not None and str(value).strip() != "":
+            lines.append(f"{label.capitalize()}: {value}")
             
-        # Convert dataframe to a readable list of properties
-        profile_dict = data.to_dict(orient='records')[0] if len(data) > 0 else {}
-        
-        lines = []
-        for label, value in profile_dict.items():
-            if value is not None and str(value).strip() != "":
-                lines.append(f"{label.capitalize()}: {value}")
-                
-        header = f"# Company Profile for {ticker.upper()}\n"
-        header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        
-        return header + "\n".join(lines)
-        
-    except Exception as e:
-        return f"Error retrieving fundamentals for {ticker}: {str(e)}"
+    header = f"# Company Profile for {ticker.upper()}\n"
+    header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+    
+    return header + "\n".join(lines)
 
 def _format_financials_to_csv(data: pd.DataFrame, ticker: str, report_type: str, freq: str) -> str:
     """Helper method to format vnstock financial dataframe to CSV string"""
@@ -98,6 +118,7 @@ def _format_financials_to_csv(data: pd.DataFrame, ticker: str, report_type: str,
     
     return header + csv_string
 
+@vnstock_retry()
 def get_vnstock_balance_sheet(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
@@ -107,17 +128,14 @@ def get_vnstock_balance_sheet(
     if Vnstock is None:
         return "Error: vnstock library is not installed."
         
-    try:
-        client = Vnstock()
-        stock = client.stock(symbol=ticker.upper(), source='TCBS')
-        period = "year" if freq.lower() == "annual" else "quarter"
-        
-        data = stock.finance.balance_sheet(period=period, lang='vi')
-        return _format_financials_to_csv(data, ticker, "Balance Sheet", freq)
-        
-    except Exception as e:
-        return f"Error retrieving balance sheet for {ticker}: {str(e)}"
+    client = Vnstock()
+    stock = client.stock(symbol=ticker.upper(), source='TCBS')
+    period = "year" if freq.lower() == "annual" else "quarter"
+    
+    data = stock.finance.balance_sheet(period=period, lang='vi')
+    return _format_financials_to_csv(data, ticker, "Balance Sheet", freq)
 
+@vnstock_retry()
 def get_vnstock_income_statement(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
@@ -127,17 +145,14 @@ def get_vnstock_income_statement(
     if Vnstock is None:
         return "Error: vnstock library is not installed."
         
-    try:
-        client = Vnstock()
-        stock = client.stock(symbol=ticker.upper(), source='TCBS')
-        period = "year" if freq.lower() == "annual" else "quarter"
-        
-        data = stock.finance.income_statement(period=period, lang='vi')
-        return _format_financials_to_csv(data, ticker, "Income Statement", freq)
-        
-    except Exception as e:
-        return f"Error retrieving income statement for {ticker}: {str(e)}"
+    client = Vnstock()
+    stock = client.stock(symbol=ticker.upper(), source='TCBS')
+    period = "year" if freq.lower() == "annual" else "quarter"
+    
+    data = stock.finance.income_statement(period=period, lang='vi')
+    return _format_financials_to_csv(data, ticker, "Income Statement", freq)
 
+@vnstock_retry()
 def get_vnstock_cashflow(
     ticker: Annotated[str, "ticker symbol of the company"],
     freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
@@ -147,13 +162,9 @@ def get_vnstock_cashflow(
     if Vnstock is None:
         return "Error: vnstock library is not installed."
         
-    try:
-        client = Vnstock()
-        stock = client.stock(symbol=ticker.upper(), source='TCBS')
-        period = "year" if freq.lower() == "annual" else "quarter"
-        
-        data = stock.finance.cash_flow(period=period, lang='vi')
-        return _format_financials_to_csv(data, ticker, "Cash Flow", freq)
-        
-    except Exception as e:
-        return f"Error retrieving cash flow for {ticker}: {str(e)}"
+    client = Vnstock()
+    stock = client.stock(symbol=ticker.upper(), source='TCBS')
+    period = "year" if freq.lower() == "annual" else "quarter"
+    
+    data = stock.finance.cash_flow(period=period, lang='vi')
+    return _format_financials_to_csv(data, ticker, "Cash Flow", freq)
