@@ -6,7 +6,7 @@ from pathlib import Path
 
 from cli_vnmarket.display import print_banner, display_mock_data, console
 from cli_vnmarket.interactive import ask_ticker, ask_action
-from cli_vnmarket.data_engine import fetch_mock_data
+from cli_vnmarket.data_engine import fetch_data
 
 app = typer.Typer(
     name="vnmarket",
@@ -32,7 +32,7 @@ def start():
         
         # Show spinner while fetching
         with Live(Spinner("dots", text=f"[cyan]Fetching {action} for {ticker}...[/cyan]"), refresh_per_second=10):
-            data = fetch_mock_data(ticker, action)
+            data = fetch_data(ticker, action)
             
         # Display data
         display_mock_data(ticker, action, data)
