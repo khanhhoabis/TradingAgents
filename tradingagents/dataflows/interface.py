@@ -26,6 +26,9 @@ from .alpha_vantage_common import AlphaVantageRateLimitError
 from .vnstock_api import (
     get_vnstock_data_online,
     get_vnstock_fundamentals,
+    get_vnstock_balance_sheet,
+    get_vnstock_income_statement,
+    get_vnstock_cashflow,
 )
 
 # Configuration and routing logic
@@ -92,14 +95,17 @@ VENDOR_METHODS = {
     "get_balance_sheet": {
         "alpha_vantage": get_alpha_vantage_balance_sheet,
         "yfinance": get_yfinance_balance_sheet,
+        "vnstock": get_vnstock_balance_sheet,
     },
     "get_cashflow": {
         "alpha_vantage": get_alpha_vantage_cashflow,
         "yfinance": get_yfinance_cashflow,
+        "vnstock": get_vnstock_cashflow,
     },
     "get_income_statement": {
         "alpha_vantage": get_alpha_vantage_income_statement,
         "yfinance": get_yfinance_income_statement,
+        "vnstock": get_vnstock_income_statement,
     },
     # news_data
     "get_news": {

@@ -84,3 +84,76 @@ def get_vnstock_fundamentals(
         
     except Exception as e:
         return f"Error retrieving fundamentals for {ticker}: {str(e)}"
+
+def _format_financials_to_csv(data: pd.DataFrame, ticker: str, report_type: str, freq: str) -> str:
+    """Helper method to format vnstock financial dataframe to CSV string"""
+    if data is None or data.empty:
+        return f"No {report_type} data found for symbol '{ticker}'"
+        
+    # Convert dataframe to CSV string
+    csv_string = data.to_csv(index=False)
+    
+    header = f"# {report_type} data for {ticker.upper()} ({freq})\n"
+    header += f"# Data retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+    
+    return header + csv_string
+
+def get_vnstock_balance_sheet(
+    ticker: Annotated[str, "ticker symbol of the company"],
+    freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
+    curr_date: Annotated[str, "current date in YYYY-MM-DD format (not used)"] = None
+) -> str:
+    """Get balance sheet data from vnstock."""
+    if Vnstock is None:
+        return "Error: vnstock library is not installed."
+        
+    try:
+        client = Vnstock()
+        stock = client.stock(symbol=ticker.upper(), source='TCBS')
+        period = "year" if freq.lower() == "annual" else "quarter"
+        
+        data = stock.finance.balance_sheet(period=period, lang='vi')
+        return _format_financials_to_csv(data, ticker, "Balance Sheet", freq)
+        
+    except Exception as e:
+        return f"Error retrieving balance sheet for {ticker}: {str(e)}"
+
+def get_vnstock_income_statement(
+    ticker: Annotated[str, "ticker symbol of the company"],
+    freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
+    curr_date: Annotated[str, "current date in YYYY-MM-DD format (not used)"] = None
+) -> str:
+    """Get income statement data from vnstock."""
+    if Vnstock is None:
+        return "Error: vnstock library is not installed."
+        
+    try:
+        client = Vnstock()
+        stock = client.stock(symbol=ticker.upper(), source='TCBS')
+        period = "year" if freq.lower() == "annual" else "quarter"
+        
+        data = stock.finance.income_statement(period=period, lang='vi')
+        return _format_financials_to_csv(data, ticker, "Income Statement", freq)
+        
+    except Exception as e:
+        return f"Error retrieving income statement for {ticker}: {str(e)}"
+
+def get_vnstock_cashflow(
+    ticker: Annotated[str, "ticker symbol of the company"],
+    freq: Annotated[str, "frequency of data: 'annual' or 'quarterly'"] = "quarterly",
+    curr_date: Annotated[str, "current date in YYYY-MM-DD format (not used)"] = None
+) -> str:
+    """Get cash flow data from vnstock."""
+    if Vnstock is None:
+        return "Error: vnstock library is not installed."
+        
+    try:
+        client = Vnstock()
+        stock = client.stock(symbol=ticker.upper(), source='TCBS')
+        period = "year" if freq.lower() == "annual" else "quarter"
+        
+        data = stock.finance.cash_flow(period=period, lang='vi')
+        return _format_financials_to_csv(data, ticker, "Cash Flow", freq)
+        
+    except Exception as e:
+        return f"Error retrieving cash flow for {ticker}: {str(e)}"

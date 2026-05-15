@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from cli_vnmarket.display import print_banner, display_data, console
-from cli_vnmarket.interactive import ask_ticker, ask_action
+from cli_vnmarket.interactive import ask_ticker, ask_action, ask_frequency
 from cli_vnmarket.data_engine import fetch_data
 
 app = typer.Typer(
@@ -28,11 +28,15 @@ def start():
             console.print("[dim]Exiting VN Market CLI... Goodbye![/dim]")
             break
             
+        freq = "quarterly"
+        if action in ["Balance Sheet", "Income Statement", "Cash Flow"]:
+            freq = ask_frequency()
+            
         console.print()
         
         # Show spinner while fetching
         with Live(Spinner("dots", text=f"[cyan]Fetching {action} for {ticker}...[/cyan]"), refresh_per_second=10):
-            data = fetch_data(ticker, action)
+            data = fetch_data(ticker, action, freq)
             
         # Display data
         display_data(ticker, action, data)

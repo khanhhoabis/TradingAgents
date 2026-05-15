@@ -17,14 +17,31 @@ def ask_ticker() -> str:
     return ticker.strip().upper()
 
 def ask_action() -> str:
+    """Ask the user what action they want to perform."""
     action = questionary.select(
-        "Select the type of data you want to fetch:",
+        "What do you want to do?",
         choices=[
             "Historical Price (OHLCV)",
-            "Financial Reports",
             "Company Profile",
+            "Balance Sheet",
+            "Income Statement",
+            "Cash Flow",
             "Exit"
-        ]
+        ],
+        style=custom_style
     ).ask()
     
     return action
+
+def ask_frequency() -> str:
+    """Ask the user for financial report frequency."""
+    freq = questionary.select(
+        "Select report frequency:",
+        choices=[
+            "Quarterly",
+            "Annual"
+        ],
+        style=custom_style
+    ).ask()
+    
+    return freq
