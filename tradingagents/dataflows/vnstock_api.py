@@ -8,9 +8,12 @@ from functools import wraps
 logger = logging.getLogger(__name__)
 
 try:
-    from vnstock import Vnstock
+    from vnstock.api.quote import Quote
+    from vnstock.api.company import Company
+    from vnstock.api.financial import Finance
+    VNSTOCK_AVAILABLE = True
 except ImportError:
-    Vnstock = None
+    VNSTOCK_AVAILABLE = False
 
 def vnstock_retry(max_retries=3, base_delay=2.0):
     """Decorator to retry vnstock API calls on failure with exponential backoff."""
@@ -40,16 +43,14 @@ def get_vnstock_data_online(
     end_date: Annotated[str, "End date in yyyy-mm-dd format"],
 ) -> str:
     """Fetch historical OHLCV data using vnstock and return as CSV string."""
-    if Vnstock is None:
+    if not VNSTOCK_AVAILABLE:
         return "Error: vnstock library is not installed."
         
     datetime.strptime(start_date, "%Y-%m-%d")
     datetime.strptime(end_date, "%Y-%m-%d")
     
-    client = Vnstock()
-    stock = client.stock(symbol=symbol.upper(), source='VCI')
-    
-    data = stock.quote.history(start=start_date, end=end_date)
+    q = Quote(symbol=symbol.upper(), source='VCI')
+    data = q.history(start=start_date, end=end_date)
     
     if data is None or data.empty:
         return f"No data found for symbol '{symbol}' between {start_date} and {end_date}"
@@ -81,13 +82,11 @@ def get_vnstock_fundamentals(
     curr_date: Annotated[str, "current date (not used for vnstock)"] = None
 ) -> str:
     """Get company fundamentals overview from vnstock."""
-    if Vnstock is None:
+    if not VNSTOCK_AVAILABLE:
         return "Error: vnstock library is not installed."
         
-    client = Vnstock()
-    stock = client.stock(symbol=ticker.upper(), source='TCBS')
-    
-    data = stock.company.profile()
+    c = Company(symbol=ticker.upper(), source='VCI')
+    data = c.overview()
     
     if data is None or data.empty:
         return f"No fundamentals data found for symbol '{ticker}'"
@@ -125,14 +124,13 @@ def get_vnstock_balance_sheet(
     curr_date: Annotated[str, "current date in YYYY-MM-DD format (not used)"] = None
 ) -> str:
     """Get balance sheet data from vnstock."""
-    if Vnstock is None:
+    if not VNSTOCK_AVAILABLE:
         return "Error: vnstock library is not installed."
         
-    client = Vnstock()
-    stock = client.stock(symbol=ticker.upper(), source='TCBS')
+    f = Finance(symbol=ticker.upper(), source='VCI')
     period = "year" if freq.lower() == "annual" else "quarter"
     
-    data = stock.finance.balance_sheet(period=period, lang='vi')
+    data = f.balance_sheet(period=period, lang='vi')
     return _format_financials_to_csv(data, ticker, "Balance Sheet", freq)
 
 @vnstock_retry()
@@ -142,14 +140,13 @@ def get_vnstock_income_statement(
     curr_date: Annotated[str, "current date in YYYY-MM-DD format (not used)"] = None
 ) -> str:
     """Get income statement data from vnstock."""
-    if Vnstock is None:
+    if not VNSTOCK_AVAILABLE:
         return "Error: vnstock library is not installed."
         
-    client = Vnstock()
-    stock = client.stock(symbol=ticker.upper(), source='TCBS')
+    f = Finance(symbol=ticker.upper(), source='VCI')
     period = "year" if freq.lower() == "annual" else "quarter"
     
-    data = stock.finance.income_statement(period=period, lang='vi')
+    data = f.income_statement(period=period, lang='vi')
     return _format_financials_to_csv(data, ticker, "Income Statement", freq)
 
 @vnstock_retry()
@@ -159,12 +156,11 @@ def get_vnstock_cashflow(
     curr_date: Annotated[str, "current date in YYYY-MM-DD format (not used)"] = None
 ) -> str:
     """Get cash flow data from vnstock."""
-    if Vnstock is None:
+    if not VNSTOCK_AVAILABLE:
         return "Error: vnstock library is not installed."
         
-    client = Vnstock()
-    stock = client.stock(symbol=ticker.upper(), source='TCBS')
+    f = Finance(symbol=ticker.upper(), source='VCI')
     period = "year" if freq.lower() == "annual" else "quarter"
     
-    data = stock.finance.cash_flow(period=period, lang='vi')
+    data = f.cash_flow(period=period, lang='vi')
     return _format_financials_to_csv(data, ticker, "Cash Flow", freq)

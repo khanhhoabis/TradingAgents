@@ -34,13 +34,11 @@ def mock_fundamentals_data():
     })
 
 # Tests
-@patch('tradingagents.dataflows.vnstock_api.Vnstock')
-def test_get_vnstock_data_online_success(MockVnstock, mock_ohlcv_data):
+@patch('tradingagents.dataflows.vnstock_api.Quote')
+def test_get_vnstock_data_online_success(MockQuote, mock_ohlcv_data):
     # Setup mock
-    mock_instance = MockVnstock.return_value
-    mock_stock = MagicMock()
-    mock_instance.stock.return_value = mock_stock
-    mock_stock.quote.history.return_value = mock_ohlcv_data
+    mock_instance = MockQuote.return_value
+    mock_instance.history.return_value = mock_ohlcv_data
 
     # Call
     result = get_vnstock_data_online('FPT', '2023-01-01', '2023-01-02')
@@ -51,36 +49,29 @@ def test_get_vnstock_data_online_success(MockVnstock, mock_ohlcv_data):
     assert "2023-01-01" in result
     assert "10.0" in result # open price
 
-@patch('tradingagents.dataflows.vnstock_api.Vnstock')
-def test_get_vnstock_data_online_empty(MockVnstock, mock_empty_data):
-    mock_instance = MockVnstock.return_value
-    mock_stock = MagicMock()
-    mock_instance.stock.return_value = mock_stock
-    mock_stock.quote.history.return_value = mock_empty_data
+@patch('tradingagents.dataflows.vnstock_api.Quote')
+def test_get_vnstock_data_online_empty(MockQuote, mock_empty_data):
+    mock_instance = MockQuote.return_value
+    mock_instance.history.return_value = mock_empty_data
 
     result = get_vnstock_data_online('INVALID', '2023-01-01', '2023-01-02')
     assert "No data found for symbol 'INVALID'" in result
 
-@patch('tradingagents.dataflows.vnstock_api.Vnstock')
-def test_get_vnstock_fundamentals_success(MockVnstock, mock_fundamentals_data):
-    mock_instance = MockVnstock.return_value
-    mock_stock = MagicMock()
-    mock_instance.stock.return_value = mock_stock
-    mock_stock.company.profile.return_value = mock_fundamentals_data
+@patch('tradingagents.dataflows.vnstock_api.Company')
+def test_get_vnstock_fundamentals_success(MockCompany, mock_fundamentals_data):
+    mock_instance = MockCompany.return_value
+    mock_instance.overview.return_value = mock_fundamentals_data
 
     result = get_vnstock_fundamentals('FPT')
     assert "Company Profile for FPT" in result
     assert "Ticker: FPT" in result
     assert "Market_cap: 100000" in result
 
-@patch('tradingagents.dataflows.vnstock_api.Vnstock')
-def test_get_vnstock_balance_sheet_success(MockVnstock):
-    mock_instance = MockVnstock.return_value
-    mock_stock = MagicMock()
-    mock_instance.stock.return_value = mock_stock
-    
+@patch('tradingagents.dataflows.vnstock_api.Finance')
+def test_get_vnstock_balance_sheet_success(MockFinance):
+    mock_instance = MockFinance.return_value
     mock_df = pd.DataFrame({'year': [2023], 'assets': [50000]})
-    mock_stock.finance.balance_sheet.return_value = mock_df
+    mock_instance.balance_sheet.return_value = mock_df
 
     result = get_vnstock_balance_sheet('FPT', freq='annual')
     assert "Balance Sheet data for FPT (annual)" in result
@@ -119,14 +110,12 @@ def test_vnstock_retry_max_retries_exceeded():
     assert call_count == 3 # 1 initial + 2 retries
 
 @patch('tradingagents.dataflows.vnstock_api.time.sleep') # Mock sleep to speed up test
-@patch('tradingagents.dataflows.vnstock_api.Vnstock')
-def test_api_call_with_retry(MockVnstock, mock_sleep):
-    mock_instance = MockVnstock.return_value
-    mock_stock = MagicMock()
-    mock_instance.stock.return_value = mock_stock
+@patch('tradingagents.dataflows.vnstock_api.Quote')
+def test_api_call_with_retry(MockQuote, mock_sleep):
+    mock_instance = MockQuote.return_value
     
     # Make history raise exception 3 times (fails all retries)
-    mock_stock.quote.history.side_effect = Exception("Rate Limited")
+    mock_instance.history.side_effect = Exception("Rate Limited")
     
     result = get_vnstock_data_online('FPT', '2023-01-01', '2023-01-02')
     
