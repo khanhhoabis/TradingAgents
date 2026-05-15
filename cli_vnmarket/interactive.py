@@ -1,8 +1,22 @@
 import questionary
 from rich.console import Console
 import typer
+from questionary import Style
 
 console = Console()
+
+custom_style = Style([
+    ('qmark', 'fg:#00bfff bold'),       
+    ('question', 'bold'),               
+    ('answer', 'fg:#00ff00 bold'),      
+    ('pointer', 'fg:#00bfff bold'),     
+    ('highlighted', 'fg:#00bfff bold'), 
+    ('selected', 'fg:#00ff00'),         
+    ('separator', 'fg:#cc5454'),        
+    ('instruction', ''),                
+    ('text', ''),                       
+    ('disabled', 'fg:#858585 italic')   
+])
 
 def ask_ticker() -> str:
     ticker = questionary.text(
