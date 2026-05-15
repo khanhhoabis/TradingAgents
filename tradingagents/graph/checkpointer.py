@@ -1,3 +1,4 @@
+# TODO: Optimize SQLite connection pooling for checkpointer
 """LangGraph checkpoint support for resumable analysis runs.
 
 Per-ticker SQLite databases so concurrent tickers don't contend.

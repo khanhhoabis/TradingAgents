@@ -1,0 +1,17 @@
+{
+  "skill_name": "atlassian-workflow-sync",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Scan the current repository for any TODOs and list what should be added to Jira project SCRUM.",
+      "expected_output": "The model should run scan_todos.py, identify the TODOs in the codebase, and present them with a recommendation to create Jira issues.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Find the Jira issue related to 'checkpointer' and update its status to In Progress.",
+      "expected_output": "The model should search Jira for 'checkpointer', find the relevant issue key, and use transitionJiraIssue to update it.",
+      "files": []
+    }
+  ]
+}

@@ -163,14 +163,14 @@ MODEL_OPTIONS: ProviderModeOptions = {
     # `ollama pull` beyond the three suggested defaults.
     "ollama": {
         "quick": [
+            ("Qwen 2.5 (1.5B/986MB) - Fastest Tool-Calling Choice", "qwen2.5:1.5b"),
+            ("Gemma 4 (26B/7.2GB) - Best local logic + tool use", "gemma4:e2b"),
             ("Qwen3:latest (8B)", "qwen3:latest"),
-            ("GPT-OSS:latest (20B)", "gpt-oss:latest"),
-            ("GLM-4.7-Flash:latest (30B)", "glm-4.7-flash:latest"),
             ("Custom model ID", "custom"),
         ],
         "deep": [
-            ("GLM-4.7-Flash:latest (30B)", "glm-4.7-flash:latest"),
-            ("GPT-OSS:latest (20B)", "gpt-oss:latest"),
+            ("Qwen 2.5 (1.5B/986MB) - Fastest Tool-Calling Choice", "qwen2.5:1.5b"),
+            ("Gemma 4 (26B/7.2GB) - Best local logic + tool use", "gemma4:e2b"),
             ("Qwen3:latest (8B)", "qwen3:latest"),
             ("Custom model ID", "custom"),
         ],

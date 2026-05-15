@@ -1,0 +1,8 @@
+[
+  {
+    "file": "tradingagents/graph/checkpointer.py",
+    "line": 1,
+    "type": "TODO",
+    "message": "Optimize SQLite connection pooling for checkpointer"
+  }
+]

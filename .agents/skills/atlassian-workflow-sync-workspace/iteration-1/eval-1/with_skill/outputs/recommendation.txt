@@ -1,0 +1,1 @@
+Recommendation: Create a new Jira Task in project SCRUM for 'Optimize SQLite connection pooling for checkpointer' (found in tradingagents/graph/checkpointer.py:1)

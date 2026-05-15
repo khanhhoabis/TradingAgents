@@ -1,0 +1,9 @@
+{
+  "eval_id": 1,
+  "eval_name": "scan-todos",
+  "prompt": "Scan the current repository for any TODOs and list what should be added to Jira project SCRUM.",
+  "assertions": [
+    {"text": "Ran scan_todos.py script", "passed": true, "evidence": "File todos.json exists"},
+    {"text": "Identified the TODO in checkpointer.py", "passed": true, "evidence": "Output contains 'Optimize SQLite connection pooling'"}
+  ]
+}

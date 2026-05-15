@@ -1,0 +1,11 @@
+./.agents/skills/atlassian-workflow-sync-workspace/iteration-1/eval-1/with_skill/outputs/todos.json:    "type": "TODO",
+./.agents/skills/atlassian-workflow-sync/evals/evals.json:      "prompt": "Scan the current repository for any TODOs and list what should be added to Jira project SCRUM.",
+./.agents/skills/atlassian-workflow-sync/evals/evals.json:      "expected_output": "The model should run scan_todos.py, identify the TODOs in the codebase, and present them with a recommendation to create Jira issues.",
+./.agents/skills/atlassian-workflow-sync/scripts/scan_todos.py:    todo_pattern = re.compile(r'#\s*(TODO|FIXME|BUG):\s*(.*)', re.IGNORECASE)
+./.agents/skills/atlassian-workflow-sync/SKILL.md:description: Syncs development progress with Jira and GitHub. Automatically detects TODOs in the codebase and proposes Jira issue creation. Helps track project status across Atlassian tools. Use this whenever the user mentions Jira, syncing tasks, or tracking development progress.
+./.agents/skills/atlassian-workflow-sync/SKILL.md:1. **Sync TODOs**: Scan the codebase for `TODO`, `FIXME`, or `BUG` comments and propose creating corresponding Jira issues.
+./.agents/skills/atlassian-workflow-sync/SKILL.md:### 1. Scanning for TODOs
+./.agents/skills/atlassian-workflow-sync/SKILL.md:To find and sync TODOs, run the scanner script:
+./.agents/skills/atlassian-workflow-sync/SKILL.md:**Example 1: Syncing a new TODO**
+./.agents/skills/atlassian-workflow-sync/SKILL.md:Input: "Sync any new TODOs to Jira"
+./tradingagents/graph/checkpointer.py:# TODO: Optimize SQLite connection pooling for checkpointer
