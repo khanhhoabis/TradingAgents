@@ -10,7 +10,9 @@ This skill automates the connection between your local development and Jira.
 ## Core Capabilities
 1. **Sync TODOs**: Scan the codebase for `TODO`, `FIXME`, or `BUG` comments and propose creating corresponding Jira issues.
 2. **Issue Management**: Link code changes to Jira keys and update status (To Do, In Progress, Done).
-3. **Daily Summary**: Generate a summary of git commits and propose a Jira worklog or status update.
+3. **GitHub Integration**: Create branches (`feature/SCRUM-XXX`), commit code with conventional commits linking the Jira issue, and create PRs.
+4. **Human in the Loop (MANDATORY)**: Before executing ANY `git push` or GitHub PR creation command, you MUST generate a summary of changes (or `git diff`) and explicitly ask the user for approval. Do not push without approval.
+5. **Daily Summary**: Generate a summary of git commits and propose a Jira worklog or status update.
 
 ## Usage Guide
 

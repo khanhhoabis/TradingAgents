@@ -26,6 +26,12 @@ When `README.md` or `Dockerfile` changes:
 - Find the corresponding page on Confluence using `searchConfluenceUsingCql`.
 - Update the page with the latest instructions.
 
+### 3. Syncing PRDs (Product Requirement Documents)
+When code logic deviates or expands from the original PRD:
+- Find the original PRD on Confluence via Jira ticket links.
+- Use `updateConfluencePage` to append an "Implementation Notes" or "Technical Deviations" section.
+- Ensure the Confluence page remains the Single Source of Truth by aligning code and doc.
+
 ### 3. Confluence Defaults
 - **Space ID**: `131170` (Space Key: `PM`)
 - **Cloud ID**: `aaa663cb-b14e-484f-9588-a74bcf4c218c`
