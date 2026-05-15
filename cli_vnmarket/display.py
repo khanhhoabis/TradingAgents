@@ -30,21 +30,18 @@ def print_banner():
     console.print(Align.center(welcome_box))
     console.print()
 
-def display_mock_data(ticker: str, action: str, data: list):
-    """Display the fetched mock data in a rich table."""
-    table = Table(title=f"Results: {action} for {ticker}", header_style="bold magenta", expand=True)
+def display_data(ticker: str, action: str, data: str):
+    """Display the fetched text data in a rich panel."""
     
-    if not data:
-        console.print("[yellow]No data returned.[/yellow]")
+    if not data or data.startswith("Error"):
+        console.print(f"[yellow]Issue fetching data: {data}[/yellow]")
         return
-
-    # Add columns based on the first item's keys
-    for key in data[0].keys():
-        table.add_column(key.capitalize(), style="cyan", justify="center")
         
-    # Add rows
-    for item in data:
-        row = [str(val) for val in item.values()]
-        table.add_row(*row)
-        
-    console.print(Panel(table, border_style="green"))
+    # We just wrap the text in a panel
+    panel = Panel(
+        data, 
+        title=f"Results: {action} for {ticker}", 
+        border_style="green",
+        expand=True
+    )
+    console.print(panel)

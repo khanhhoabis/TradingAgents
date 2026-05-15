@@ -4,7 +4,7 @@ from rich.spinner import Spinner
 import json
 from pathlib import Path
 
-from cli_vnmarket.display import print_banner, display_mock_data, console
+from cli_vnmarket.display import print_banner, display_data, console
 from cli_vnmarket.interactive import ask_ticker, ask_action
 from cli_vnmarket.data_engine import fetch_data
 
@@ -35,15 +35,18 @@ def start():
             data = fetch_data(ticker, action)
             
         # Display data
-        display_mock_data(ticker, action, data)
+        display_data(ticker, action, data)
         
-        # Optionally save to JSON (mock implementation)
+        # Optionally save to text/CSV
         output_dir = Path("outputs") / ticker
         output_dir.mkdir(parents=True, exist_ok=True)
-        filename = action.lower().replace(" ", "_").replace("_(ohlcv)", "") + ".json"
+        
+        # Determine extension based on data content
+        ext = ".csv" if "Historical" in action else ".txt"
+        filename = action.lower().replace(" ", "_").replace("_(ohlcv)", "") + ext
         
         with open(output_dir / filename, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            f.write(data)
             
         console.print(f"[dim]Data saved to {output_dir / filename}[/dim]\n")
 

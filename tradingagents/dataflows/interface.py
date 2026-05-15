@@ -23,6 +23,10 @@ from .alpha_vantage import (
     get_global_news as get_alpha_vantage_global_news,
 )
 from .alpha_vantage_common import AlphaVantageRateLimitError
+from .vnstock_api import (
+    get_vnstock_data_online,
+    get_vnstock_fundamentals,
+)
 
 # Configuration and routing logic
 from .config import get_config
@@ -63,6 +67,7 @@ TOOLS_CATEGORIES = {
 VENDOR_LIST = [
     "yfinance",
     "alpha_vantage",
+    "vnstock",
 ]
 
 # Mapping of methods to their vendor-specific implementations
@@ -71,6 +76,7 @@ VENDOR_METHODS = {
     "get_stock_data": {
         "alpha_vantage": get_alpha_vantage_stock,
         "yfinance": get_YFin_data_online,
+        "vnstock": get_vnstock_data_online,
     },
     # technical_indicators
     "get_indicators": {
@@ -81,6 +87,7 @@ VENDOR_METHODS = {
     "get_fundamentals": {
         "alpha_vantage": get_alpha_vantage_fundamentals,
         "yfinance": get_yfinance_fundamentals,
+        "vnstock": get_vnstock_fundamentals,
     },
     "get_balance_sheet": {
         "alpha_vantage": get_alpha_vantage_balance_sheet,
