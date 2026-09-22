@@ -80,22 +80,23 @@ DEFAULT_CONFIG = _apply_env_overrides({
     "news_article_limit": 20,             # max articles per ticker (ticker-news)
     "global_news_article_limit": 10,      # max articles for global/macro news
     "global_news_lookback_days": 7,       # macro news lookback window
-    # Search queries used by get_global_news for macro headlines. Extend or
-    # replace to broaden geographic / sector coverage.
+    # Search queries used by get_global_news for macro headlines. Localized to
+    # the Vietnam macro context for HOSE trading (this is a VN-focused fork).
+    # Extend or replace to broaden geographic / sector coverage.
     "global_news_queries": [
-        "Federal Reserve interest rates inflation",
-        "S&P 500 earnings GDP economic outlook",
-        "geopolitical risk trade war sanctions",
-        "ECB Bank of England BOJ central bank policy",
-        "oil commodities supply chain energy",
+        "State Bank of Vietnam interest rate policy inflation CPI",
+        "VN-Index HOSE market outlook foreign investor flows",
+        "Vietnam GDP growth FDI export import trade balance",
+        "USD VND exchange rate SBV monetary policy",
+        "Vietnam banking real estate credit growth sector",
     ],
     # Data vendor configuration
     # Category-level configuration (default for all tools in category)
     "data_vendors": {
-        "core_stock_apis": "yfinance",       # Options: alpha_vantage, yfinance
-        "technical_indicators": "yfinance",  # Options: alpha_vantage, yfinance
-        "fundamental_data": "yfinance",      # Options: alpha_vantage, yfinance
-        "news_data": "yfinance",             # Options: alpha_vantage, yfinance
+        "core_stock_apis": "vn",       # Options: vn, alpha_vantage, yfinance
+        "technical_indicators": "vn",  # Options: vn, alpha_vantage, yfinance
+        "fundamental_data": "vn",      # Options: vn, alpha_vantage, yfinance
+        "news_data": "vn",             # Options: vn, alpha_vantage, yfinance
     },
     # Tool-level configuration (takes precedence over category-level)
     "tool_vendors": {
@@ -116,6 +117,7 @@ DEFAULT_CONFIG = _apply_env_overrides({
         ".L":   "^FTSE",    # London (FTSE 100)
         ".TO":  "^GSPTSE",  # Toronto (TSX Composite)
         ".AX":  "^AXJO",    # Australia (ASX 200)
+        ".HM":  "VNINDEX",  # HOSE Vietnam (VN-Index); fetched via the "vn" vendor
         "":     "SPY",      # default for US-listed tickers (no suffix)
     },
 })
