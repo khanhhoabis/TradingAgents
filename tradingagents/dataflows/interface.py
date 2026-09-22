@@ -37,6 +37,10 @@ from .vn_fundamentals import (
     get_cashflow as get_vn_cashflow,
     get_income_statement as get_vn_income_statement,
 )
+from .vn_news import (
+    get_news as get_vn_news,
+    get_global_news as get_vn_global_news,
+)
 
 # Configuration and routing logic
 from .config import get_config
@@ -117,10 +121,12 @@ VENDOR_METHODS = {
     },
     # news_data
     "get_news": {
+        "vn": get_vn_news,
         "alpha_vantage": get_alpha_vantage_news,
         "yfinance": get_news_yfinance,
     },
     "get_global_news": {
+        "vn": get_vn_global_news,
         "yfinance": get_global_news_yfinance,
         "alpha_vantage": get_alpha_vantage_global_news,
     },
