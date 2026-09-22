@@ -63,6 +63,7 @@ def create_sentiment_analyst(llm):
             news_block=news_block,
             stocktwits_block=stocktwits_block,
             reddit_block=reddit_block,
+            is_hose=ticker.strip().upper().endswith(".HM"),
         )
 
         prompt = ChatPromptTemplate.from_messages(
@@ -104,9 +105,24 @@ def _build_system_message(
     news_block: str,
     stocktwits_block: str,
     reddit_block: str,
+    is_hose: bool = False,
 ) -> str:
     """Assemble the sentiment-analyst system message with structured data blocks."""
+    hose_note = ""
+    if is_hose:
+        hose_note = (
+            "\n## IMPORTANT — this is a HOSE (Vietnam) ticker\n"
+            "StockTwits and Reddit are US retail platforms and effectively do NOT "
+            "cover Vietnamese HOSE stocks: those two blocks will usually be empty or "
+            "off-topic. Do NOT infer sentiment from them for this ticker, and do NOT "
+            "fabricate Vietnamese retail chatter. Base your read primarily on the news "
+            "block, and state plainly that VN retail-sentiment sources are unavailable "
+            "so the sentiment read is lower-confidence. Vietnamese retail sentiment "
+            "lives on local venues (F319, FireAnt, Facebook/Zalo groups) not covered "
+            "here.\n"
+        )
     return f"""You are a financial market sentiment analyst. Your task is to produce a comprehensive sentiment report for {ticker} covering the period from {start_date} to {end_date}, drawing on three complementary data sources that have already been collected for you.
+{hose_note}
 
 ## Data sources (pre-fetched, in this prompt)
 

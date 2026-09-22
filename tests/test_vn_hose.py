@@ -94,3 +94,22 @@ class TestPeriodMapping:
     ])
     def test_period(self, freq, period):
         assert vn_fundamentals._period(freq) == period
+
+
+class TestSentimentHoseAware:
+    def test_hose_note_present_for_hm(self):
+        from tradingagents.agents.analysts.sentiment_analyst import _build_system_message
+        msg = _build_system_message(
+            ticker="VNM.HM", start_date="2024-01-01", end_date="2024-01-08",
+            news_block="n", stocktwits_block="s", reddit_block="r", is_hose=True,
+        )
+        assert "HOSE (Vietnam) ticker" in msg
+        assert "Do NOT infer sentiment from them" in msg
+
+    def test_no_hose_note_for_us(self):
+        from tradingagents.agents.analysts.sentiment_analyst import _build_system_message
+        msg = _build_system_message(
+            ticker="AAPL", start_date="2024-01-01", end_date="2024-01-08",
+            news_block="n", stocktwits_block="s", reddit_block="r", is_hose=False,
+        )
+        assert "HOSE (Vietnam) ticker" not in msg
