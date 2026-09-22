@@ -24,6 +24,20 @@ from .alpha_vantage import (
 )
 from .alpha_vantage_common import AlphaVantageRateLimitError
 
+# Vietnam (HOSE) vendor — backed by vnstock. Implements 6 of the 9 methods
+# (market data + fundamentals); news/insider fall back to other vendors
+# until vn_news is added.
+from .vn_market import (
+    get_stock as get_vn_stock,
+    get_indicator as get_vn_indicator,
+)
+from .vn_fundamentals import (
+    get_fundamentals as get_vn_fundamentals,
+    get_balance_sheet as get_vn_balance_sheet,
+    get_cashflow as get_vn_cashflow,
+    get_income_statement as get_vn_income_statement,
+)
+
 # Configuration and routing logic
 from .config import get_config
 
@@ -63,34 +77,41 @@ TOOLS_CATEGORIES = {
 VENDOR_LIST = [
     "yfinance",
     "alpha_vantage",
+    "vn",
 ]
 
 # Mapping of methods to their vendor-specific implementations
 VENDOR_METHODS = {
     # core_stock_apis
     "get_stock_data": {
+        "vn": get_vn_stock,
         "alpha_vantage": get_alpha_vantage_stock,
         "yfinance": get_YFin_data_online,
     },
     # technical_indicators
     "get_indicators": {
+        "vn": get_vn_indicator,
         "alpha_vantage": get_alpha_vantage_indicator,
         "yfinance": get_stock_stats_indicators_window,
     },
     # fundamental_data
     "get_fundamentals": {
+        "vn": get_vn_fundamentals,
         "alpha_vantage": get_alpha_vantage_fundamentals,
         "yfinance": get_yfinance_fundamentals,
     },
     "get_balance_sheet": {
+        "vn": get_vn_balance_sheet,
         "alpha_vantage": get_alpha_vantage_balance_sheet,
         "yfinance": get_yfinance_balance_sheet,
     },
     "get_cashflow": {
+        "vn": get_vn_cashflow,
         "alpha_vantage": get_alpha_vantage_cashflow,
         "yfinance": get_yfinance_cashflow,
     },
     "get_income_statement": {
+        "vn": get_vn_income_statement,
         "alpha_vantage": get_alpha_vantage_income_statement,
         "yfinance": get_yfinance_income_statement,
     },
